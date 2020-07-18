@@ -81,6 +81,8 @@ The supported commands are:
 
 - 'getfd' ( F_GETFD )
 - 'setfd' ( F_SETFD )
+- 'getfl' ( F_GETFL )
+- 'setfl' ( F_SETFL )
 - 'setlk' ( F_SETLK )
 - 'getlk' ( F_GETLK )
 - 'setlkw' ( F_SETLKW )

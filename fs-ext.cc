@@ -82,8 +82,7 @@ static Nan::Persistent<String> f_ffree_symbol;
   #define LOCK_UN 8
 #endif
 
-enum
-{
+enum {
   FS_OP_FLOCK,
   FS_OP_SEEK,
   FS_OP_STATVFS,
@@ -173,7 +172,7 @@ static void EIO_StatVFS(uv_work_t *req) {
   struct statvfs *data = &(statvfs_data->statvfs_buf);
   if (statvfs(statvfs_data->path, data)) {
     statvfs_data->result = -1;
-  	memset(data, 0, sizeof(struct statvfs));
+    memset(data, 0, sizeof(struct statvfs));
   };
 #endif
   free(statvfs_data->path);
@@ -250,16 +249,16 @@ static void EIO_Fcntl(uv_work_t *req) {
 
   int result = -1;
   if (data->oper == F_GETLK || data->oper == F_SETLK || data->oper == F_SETLKW) {
-	if (data->oper == F_SETLK || data->oper == F_SETLKW) {
-		lk.l_whence = SEEK_SET;
-		lk.l_type   = data->arg;
-	}
-	data->result = result = fcntl(data->fd, data->oper, &lk);
+  if (data->oper == F_SETLK || data->oper == F_SETLKW) {
+    lk.l_whence = SEEK_SET;
+    lk.l_type   = data->arg;
+  }
+  data->result = result = fcntl(data->fd, data->oper, &lk);
   } else {
-  	data->result = result = fcntl(data->fd, data->oper, data->arg);
+    data->result = result = fcntl(data->fd, data->oper, data->arg);
   }
   if (result == -1) {
-   	data->error = errno;
+     data->error = errno;
   }
 }
 #endif
@@ -511,14 +510,13 @@ static NAN_METHOD(StatVFS) {
 
   uv_work_t *req = new uv_work_t;
   req->data = statvfs_data;
-  uv_queue_work(uv_default_loop(), req, EIO_StatVFS,(uv_after_work_cb)EIO_After);
+  uv_queue_work(uv_default_loop(), req, EIO_StatVFS, (uv_after_work_cb)EIO_After);
 
   info.GetReturnValue().SetUndefined();
 }
 
 extern "C"
-NAN_MODULE_INIT(init)
-{
+NAN_MODULE_INIT(init) {
   Nan::HandleScope scope;
 
 #ifdef _WIN32
@@ -527,6 +525,7 @@ NAN_MODULE_INIT(init)
 
   v8::Local<v8::Object> constants = Nan::New<v8::Object>();
 
+  // For Seek
 #ifdef SEEK_SET
   NODE_DEFINE_CONSTANT(constants, SEEK_SET);
 #endif
@@ -539,6 +538,7 @@ NAN_MODULE_INIT(init)
   NODE_DEFINE_CONSTANT(constants, SEEK_END);
 #endif
 
+  // for Flock
 #ifdef LOCK_SH
   NODE_DEFINE_CONSTANT(constants, LOCK_SH);
 #endif
@@ -555,6 +555,7 @@ NAN_MODULE_INIT(init)
   NODE_DEFINE_CONSTANT(constants, LOCK_UN);
 #endif
 
+  // for Fcntl - File descriptor flags
 #ifdef F_GETFD
   NODE_DEFINE_CONSTANT(constants, F_GETFD);
 #endif
@@ -567,6 +568,32 @@ NAN_MODULE_INIT(init)
   NODE_DEFINE_CONSTANT(constants, FD_CLOEXEC);
 #endif
 
+  // for Fcntl - File status flags
+#ifdef F_GETFL
+  NODE_DEFINE_CONSTANT(constants, F_GETFL);
+#endif
+
+#ifdef F_SETFL
+  NODE_DEFINE_CONSTANT(constants, F_SETFL);
+#endif
+
+#ifdef O_ACCMODE
+  NODE_DEFINE_CONSTANT(constants, O_ACCMODE);
+#endif
+
+#ifdef O_RDONLY
+  NODE_DEFINE_CONSTANT(constants, O_RDONLY);
+#endif
+  
+#ifdef O_WRONLY
+  NODE_DEFINE_CONSTANT(constants, O_WRONLY);
+#endif
+  
+#ifdef O_RDWR
+  NODE_DEFINE_CONSTANT(constants, O_RDWR);
+#endif
+
+  // for Fcntl - Advisory record locking
 #ifdef F_RDLCK
   NODE_DEFINE_CONSTANT(constants, F_RDLCK);
 #endif
@@ -593,12 +620,12 @@ NAN_MODULE_INIT(init)
 
   Nan::Set(target, Nan::New("constants").ToLocalChecked(), constants);
 
-  Export(target, "seek", Seek);
+  Nan::Export(target, "seek", Seek);
 #ifndef _WIN32
-  Export(target, "fcntl", Fcntl);
+  Nan::Export(target, "fcntl", Fcntl);
 #endif
-  Export(target, "flock", Flock);
-  Export(target, "statVFS", StatVFS);
+  Nan::Export(target, "flock", Flock);
+  Nan::Export(target, "statVFS", StatVFS);
 
 #ifndef _WIN32
   f_namemax_symbol.Reset(Nan::New<String>("f_namemax").ToLocalChecked());

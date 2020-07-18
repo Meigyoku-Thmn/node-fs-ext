@@ -61,6 +61,12 @@ function stringToFcntlFlags(flag) {
     case 'setfd':
       return binding.constants.F_SETFD;
 
+    case 'getfl':
+      return binding.constants.F_GETFL;
+
+    case 'setfl':
+      return binding.constants.F_SETFL;
+
     case 'setlk':
       return binding.constants.F_SETLK;
 
